@@ -1,11 +1,11 @@
-# local-http-stt
+# http-stt
 
 Hermes STT plugin — transcribes audio via a self-hosted HTTP speech-to-text service.
 
 ## Install
 
 ```bash
-cp -r local-http-stt ~/.hermes/plugins/
+cp -r http-stt ~/.hermes/plugins/
 ```
 
 Then restart the Hermes gateway.
@@ -17,8 +17,8 @@ Add to `~/.hermes/config.yaml`:
 ```yaml
 stt:
   enabled: true
-  provider: local_http
-  local_http:
+  provider: http_stt
+  http_stt:
     service_url: http://your-stt-service:port
     language: auto
 ```
@@ -28,7 +28,7 @@ stt:
 
 ## How it works
 
-The plugin registers a `TranscriptionProvider` named `local_http`. When the gateway receives a voice message, it POSTs the audio file to `{service_url}/transcribe` and expects a JSON response:
+The plugin registers a `TranscriptionProvider` named `http_stt`. When the gateway receives a voice message, it POSTs the audio file to `{service_url}/transcribe` and expects a JSON response:
 
 ```json
 {"transcript": "recognized text", "text": "alternative field"}

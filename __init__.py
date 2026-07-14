@@ -3,9 +3,9 @@ Local HTTP STT Plugin
 =====================
 
 A TranscriptionProvider that POSTs audio files to a self-hosted
-HTTP STT service (e.g. sensevoice / whisper) at ``stt.local_http.service_url``.
+HTTP STT service (e.g. sensevoice / whisper) at ``stt.http_stt.service_url``.
 
-This replaces the native ``local_http`` handler that was inlined in
+This replaces the native ``http_stt`` handler that was inlined in
 ``tools/transcription_tools.py`` and keeps the core clean — the STT
 client lives entirely in this plugin.
 """
@@ -20,11 +20,11 @@ from agent.transcription_provider import TranscriptionProvider
 logger = logging.getLogger(__name__)
 
 
-def _load_local_http_config() -> dict:
-    """Read the ``stt.local_http`` section from config.yaml."""
+def _load_http_stt_config() -> dict:
+    """Read the ``stt.http_stt`` section from config.yaml."""
     try:
         from hermes_cli.config import load_config
-        return load_config().get("stt", {}).get("local_http", {})
+        return load_config().get("stt", {}).get("http_stt", {})
     except Exception:
         return {}
 
@@ -34,14 +34,14 @@ class LocalHttpSTTProvider(TranscriptionProvider):
 
     @property
     def name(self) -> str:
-        return "local_http"
+        return "http_stt"
 
     @property
     def display_name(self) -> str:
-        return "Local HTTP STT"
+        return "http_stt"
 
     def is_available(self) -> bool:
-        cfg = _load_local_http_config()
+        cfg = _load_http_stt_config()
         url = cfg.get("service_url", "").strip()
         return bool(url)
 
@@ -49,7 +49,7 @@ class LocalHttpSTTProvider(TranscriptionProvider):
         return []
 
     def default_model(self) -> Optional[str]:
-        cfg = _load_local_http_config()
+        cfg = _load_http_stt_config()
         return cfg.get("model", "base")
 
     def transcribe(
@@ -60,14 +60,14 @@ class LocalHttpSTTProvider(TranscriptionProvider):
         language: Optional[str] = None,
         **extra: Any,
     ) -> Dict[str, Any]:
-        cfg = _load_local_http_config()
+        cfg = _load_http_stt_config()
         service_url = str(cfg.get("service_url", "")).strip().rstrip("/")
         if not service_url:
             return {
                 "success": False,
                 "transcript": "",
-                "error": "local_http STT is not configured (stt.local_http.service_url)",
-                "provider": "local_http",
+                "error": "http_stt STT is not configured (stt.http_stt.service_url)",
+                "provider": "http_stt",
             }
         lang = language or cfg.get("language", "auto")
         model_name = model or cfg.get("model", "base")
@@ -92,7 +92,7 @@ class LocalHttpSTTProvider(TranscriptionProvider):
                         f"Local HTTP STT error (HTTP {response.status_code}): "
                         f"{response.text[:300]}"
                     ),
-                    "provider": "local_http",
+                    "provider": "http_stt",
                 }
 
             result = response.json()
@@ -104,11 +104,11 @@ class LocalHttpSTTProvider(TranscriptionProvider):
                     "success": False,
                     "transcript": "",
                     "error": "Local HTTP STT returned empty transcript",
-                    "provider": "local_http",
+                    "provider": "http_stt",
                 }
 
             logger.info(
-                "Transcribed %s via local_http (%s, %d chars)",
+                "Transcribed %s via http_stt (%s, %d chars)",
                 Path(file_path).name,
                 model_name,
                 len(transcript),
@@ -116,7 +116,7 @@ class LocalHttpSTTProvider(TranscriptionProvider):
             return {
                 "success": True,
                 "transcript": transcript,
-                "provider": "local_http",
+                "provider": "http_stt",
             }
 
         except Exception as exc:
@@ -125,10 +125,10 @@ class LocalHttpSTTProvider(TranscriptionProvider):
                 "success": False,
                 "transcript": "",
                 "error": f"Local HTTP STT failed: {exc}",
-                "provider": "local_http",
+                "provider": "http_stt",
             }
 
 
 def register(ctx) -> None:
-    """Register the local_http STT provider."""
+    """Register the http_stt STT provider."""
     ctx.register_transcription_provider(LocalHttpSTTProvider())

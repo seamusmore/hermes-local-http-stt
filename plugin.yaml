@@ -1,4 +1,4 @@
-name: local-http-stt
+name: http-stt
 version: 1.0.0
 description: "Local HTTP STT provider — POST /transcribe to a self-hosted speech-to-text service"
 author: Luna
