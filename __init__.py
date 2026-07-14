@@ -61,9 +61,14 @@ class LocalHttpSTTProvider(TranscriptionProvider):
         **extra: Any,
     ) -> Dict[str, Any]:
         cfg = _load_local_http_config()
-        service_url = str(
-            cfg.get("service_url", "http://localhost:8001")
-        ).strip().rstrip("/")
+        service_url = str(cfg.get("service_url", "")).strip().rstrip("/")
+        if not service_url:
+            return {
+                "success": False,
+                "transcript": "",
+                "error": "local_http STT is not configured (stt.local_http.service_url)",
+                "provider": "local_http",
+            }
         lang = language or cfg.get("language", "auto")
         model_name = model or cfg.get("model", "base")
 
